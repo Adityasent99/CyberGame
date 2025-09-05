@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cyber Safety Challenge Hub</title>
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg-main: #212121;
+    --bg-secondary: #333333;
+    --text-primary: #E0E0E0;
+    --text-secondary: #BDBDBD;
+    --accent: #00e676;
+    --accent-dark: #00c853;
+    --card-bg: #333333;
+    --shadow-color: rgba(0, 230, 118, 0.15);
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--bg-main);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Header */
+  h1 {
+    color: var(--accent);
+  }
+
+  /* Cards */
+  .card {
+    background-color: var(--card-bg);
+    border-radius: 18px;
+    border: 1px solid #444;
+    box-shadow: 0 10px 24px var(--shadow-color);
+    cursor: pointer;
+    padding: 24px;
+    text-align: center;
+    user-select: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    min-height: 200px;
+    gap: 12px;
+  }
+  .card:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 20px 48px rgba(0, 230, 118, 0.25);
+    border-color: var(--accent-dark);
+    z-index: 10;
+  }
+  .card .icon {
+    font-size: 3rem;
+    user-select: none;
+  }
+  .card .title {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+  }
+  .card .desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      max-width: 90%;
+  }
+  .card .coming-soon {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--text-secondary);
+  }
+  .card.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: default;
+  }
+</style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+<!-- Main Content -->
+<main class="flex-grow px-8 py-16">
+  <h1 class="text-center text-5xl font-bold mb-16">Cyber Safety Challenge Hub</h1>
+  
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12 max-w-7xl mx-auto">
+    
+    <!-- Domain Spotter Card -->
+    <a href="index.html" class="card">
+      <span class="icon" aria-hidden="true">🔗</span>
+      <span class="title">Domain Spotter</span>
+      <span class="desc">Spot safe and suspicious domains in a flash.</span>
+    </a>
+    
+    <!-- Phishing Analyzer Card -->
+    <a href="spotphising.html" class="card">
+      <span class="icon" aria-hidden="true">🎯</span>
+      <span class="title">Phishing Analyzer</span>
+      <span class="desc">Can you spot the phish from the real deal?</span>
+    </a>
+    
+    <!-- Social Engineering Card -->
+    <a href="socialengineeringslueth.html" class="card">
+      <span class="icon" aria-hidden="true">💬</span>
+      <span class="title">Social Engineering</span>
+      <span class="desc">Uncover sneaky social hacks and defenses.</span>
+    </a>
+    
+    <!-- Privacy Navigator Card -->
+    <a href="privacysettingnav.html" class="card">
+      <span class="icon" aria-hidden="true">🛡️</span>
+      <span class="title">Privacy Navigator</span>
+      <span class="desc">Master your privacy settings on any platform.</span>
+    </a>
+    
+    <!-- Story Mode Card (Coming Soon) -->
+    <div class="card disabled">
+      <span class="icon">🐛</span>
+      <span class="title">Story mode</span>
+      <span class="coming-soon">Coming Soon</span>
+    </div>
+    
+    <!-- Quiz Card (Coming Soon) -->
+    <div class="card disabled">
+      <span class="icon">📉</span>
+      <span class="title">Quiz</span>
+      <span class="coming-soon">Coming Soon</span>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

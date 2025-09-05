@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phishing Email Analyzer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-main: #212121;
+      --bg-secondary: #333333;
+      --text-primary: #E0E0E0;
+      --text-secondary: #BDBDBD;
+      --accent: #00e676;
+      --accent-dark: #00c853;
+      --shadow-color: rgba(0, 230, 118, 0.15);
+      --email-bg: #ffffff;
+      --email-text: #212121;
+      --email-text-light: #6b7280;
+      --red-flag-dot: rgba(239, 68, 68, 0.6);
+      --red-flag-hover: rgba(254, 226, 226, 0.9);
+      --red-flag-found-bg: #FEF3C7;
+      --red-flag-found-border: #F59E0B;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+    .container {
+      background: var(--bg-secondary);
+      border-radius: 15px;
+      box-shadow: 0 4px 25px var(--shadow-color);
+      max-width: 700px;
+      width: 100%;
+      padding: 2rem;
+      box-sizing: border-box;
+      border: 1px solid #444;
+    }
+    .progress-bar {
+      height: 10px;
+      background: #444;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .progress {
+      height: 100%;
+      background-color: var(--accent-dark);
+      width: 0%;
+      transition: width 0.5s ease-in-out;
+    }
+    .email-view-wrapper {
+        background-color: var(--email-bg);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        border: 1px solid #ccc;
+    }
+    .email-header p {
+      font-size: 1rem; 
+      margin: 0.2rem 0; 
+      color: var(--email-text-light);
+    }
+    .email-subject {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-top: 0.5rem;
+      color: #374151;
+    }
+    .email-body {
+      margin-top: 1rem;
+      color: var(--email-text);
+      line-height: 1.5;
+    }
+    .red-flag {
+      cursor: help;
+      border-bottom: 2px dotted var(--red-flag-dot);
+      transition: background-color 0.3s;
+    }
+    .red-flag:hover {
+      background-color: var(--red-flag-hover);
+    }
+    .red-flag.found {
+      background-color: var(--red-flag-found-bg);
+      border-bottom: 2px solid var(--red-flag-found-border);
+      cursor: default;
+    }
+    a.red-flag {
+      color: #2563EB;
+      text-decoration: underline;
+    }
+    .feedback-item {
+      background-color: #2a2a2a;
+      padding: 8px 12px;
+      border-left: 4px solid var(--accent);
+      margin-bottom: 8px;
+      border-radius: 4px;
+      color: var(--text-primary);
+    }
+    #next-button, .restart-button, .main-button {
+        font-weight: 700;
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 1.1rem;
+        width: 100%;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    #next-button {
+      margin-top: 1.5rem;
+      display: none;
+      background: var(--accent-dark);
+      color: #111;
+    }
+    #next-button:hover { 
+      background-color: var(--accent); 
+    }
+    #summary-screen {
+      display: none;
+      text-align: center;
+      padding: 2rem 0;
+    }
+    #summary-screen h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    #summary-screen p {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+    .restart-button {
+      background-color: var(--accent-dark);
+      color: #111;
+      max-width: 250px;
+      margin-top: 1rem;
+    }
+    .restart-button:hover {
+      background-color: var(--accent);
+    }
+    .main-button {
+      background-color: transparent;
+      color: var(--accent);
+      border: 2px solid var(--accent-dark);
+      max-width: 250px;
+      margin-top: 1rem;
+    }
+    .main-button:hover {
+      background-color: var(--accent-dark);
+      color: #111;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+    .modal-content {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      margin: 15% auto;
+      padding: 2rem;
+      border-radius: 15px;
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 4px 25px rgba(0,0,0,0.3);
+      border: 1px solid #444;
+    }
+    .modal-close {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+    .modal-close:hover {
+      background-color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <div id="game-screen">
+      <div class="progress-bar"><div class="progress" id="progress"></div></div>
+      <header>
+        <h1 style="text-align:center; font-size:2rem; color:var(--accent); font-weight:bold;">Phishing Email Analyzer</h1>
+        <p style="text-align:center; color:var(--text-secondary);">Click on the highlighted phrases to spot the red flags.</p>
+      </header>
+      <div class="email-view-wrapper">
+        <div class="email-header" style="border-bottom:1px solid #e5e7eb; padding-bottom:12px;">
+          <p>From: <span id="email-sender"></span></p>
+          <p>To: You</p>
+          <div id="email-subject" class="email-subject"></div>
+        </div>
+        <div id="email-body" class="email-body"></div>
+      </div>
+      <div>
+        <div style="margin:1.5rem 0 0.5rem 0; font-weight:600;color:var(--text-primary);">
+          Flags Found: <span id="score">0</span> / <span id="total-flags">0</span>
+        </div>
+        <div id="feedback-container" style="margin-top:1rem; min-height: 50px;">
+          <p id="feedback-placeholder" style="color:var(--text-secondary); text-align:center;">Click on a red flag in the email to learn more.</p>
+        </div>
+        <button id="next-button">Next Challenge</button>
+      </div>
+    </div>
+    <div id="summary-screen">
+      <!-- This content will be generated by JavaScript -->
+    </div>
+  </div>
+
+  <div id="link-modal" class="modal">
+    <div class="modal-content">
+      <h3 style="color: #ef4444; margin-bottom: 1rem;">⚠️ Warning!</h3>
+      <p>This is a fake phishing link! In a real scenario, clicking this would take you to a malicious website designed to steal your information.</p>
+      <p style="font-weight: 600; margin-top: 1rem;">Always verify links before clicking them!</p>
+      <button class="modal-close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+<script>
+const emailChallenges = [
+  {
+    sender: `<span class="red-flag" data-flag="sender">noreply@sap-hackathon.com</span>`,
+    subject: `<span class="red-flag" data-flag="subject">Congratulations! You won the SAP Hackathon Contest</span>`,
+    body: `
+      <p>Hello Participant,</p>
+      <p>We are excited to inform you that you have <span class="red-flag" data-flag="winner">won the SAP Hackathon</span> and are eligible for prize money transfer.</p>
+      <p>To claim your prize, please <span class="red-flag" data-flag="credentials-request">login and provide your SAP credentials</span> at the following link:</p>
+      <p><a href="#" class="red-flag fake-link" data-flag="link">Claim Your Prize Now</a></p>
+      <p>Failure to provide your details within <span class="red-flag" data-flag="urgency">48 hours</span> will forfeit your prize.</p>
+      <p><span class="red-flag" data-flag="signoff">Best Regards,</span><br>SAP Hackathon Support</p>
+    `,
+    explanations: {
+      sender: "<strong>Suspicious Sender:</strong> 'sap-hackathon.com' is not an official SAP domain. Always check the sender's email address.",
+      subject: "<strong>Too Good to Be True:</strong> Unexpected prize notifications are a common lure in phishing scams.",
+      winner: "<strong>Unsolicited Win:</strong> Claiming you've won a contest you may not have entered is a huge red flag.",
+      "credentials-request": "<strong>Credential Phishing:</strong> Legitimate companies will never ask for your password or credentials via email.",
+      link: "<strong>Fake Link:</strong> Hovering over links (without clicking!) often reveals a suspicious destination URL. This one is fake.",
+      urgency: "<strong>Forced Urgency:</strong> Scammers create a sense of urgency to make you act quickly without thinking.",
+      signoff: "<strong>Generic Sign-Off:</strong> Vague sign-offs without contact details are unprofessional and suspicious."
+    }
+  },
+  {
+    sender: `<span class="red-flag" data-flag="sender">customercare@sbiinforms.com</span>`,
+    subject: `<span class="red-flag" data-flag="subject">IMPORTANT: Update Your SBI KYC Details Immediately</span>`,
+    body: `
+      <p><span class="red-flag" data-flag="greeting">Dear SBI Customer,</span></p>
+      <p>Due to recent regulatory compliance, your KYC details are expired. You are requested to <span class="red-flag" data-flag="urgency">immediately</span> update your information to continue using online banking.</p>
+      <p>Please click the secure link below: <a href="#" class="red-flag fake-link" data-flag="link">Update KYC Now</a></p>
+      <p>Failure to update will result in <span class="red-flag" data-flag="threat">account suspension</span>.</p>
+      <p><span class="red-flag" data-flag="signoff">Regards,</span><br>SBI Customer Support Team</p>
+    `,
+    explanations: {
+      sender: "<strong>Suspicious Sender:</strong> The domain 'sbiinforms.com' is designed to look real but is not the official SBI domain.",
+      subject: "<strong>Alarmist Subject Line:</strong> Using words like 'IMPORTANT' and 'Immediately' is a tactic to create panic.",
+      greeting: "<strong>Generic Greeting:</strong> Your real bank will almost always address you by your full name, not 'Dear Customer'.",
+      urgency: "<strong>Sense of Urgency:</strong> Pressuring you to act now is a classic scammer tactic.",
+      link: "<strong>Fake Link:</strong> This link would lead to a fake site designed to steal your banking credentials.",
+      threat: "<strong>Threatening Language:</strong> Scammers often threaten you with negative consequences, like account suspension.",
+      signoff: "<strong>Generic Sign-Off:</strong> An official bank email would have more detailed contact information in the signature."
+    }
+  }
+];
+
+let currentChallengeIndex = 0;
+let foundFlags = new Set();
+let finalScore = 0;
+
+const gameScreen = document.getElementById('game-screen');
+const summaryScreen = document.getElementById('summary-screen');
+const emailSenderEl = document.getElementById('email-sender');
+const emailSubjectEl = document.getElementById('email-subject');
+const emailBodyEl = document.getElementById('email-body');
+const scoreEl = document.getElementById('score');
+const totalFlagsEl = document.getElementById('total-flags');
+const feedbackContainer = document.getElementById('feedback-container');
+const feedbackPlaceholder = document.getElementById('feedback-placeholder');
+const nextButton = document.getElementById('next-button');
+const progressBar = document.getElementById('progress');
+const linkModal = document.getElementById('link-modal');
+
+function showModal() {
+  linkModal.style.display = 'block';
+}
+
+function closeModal() {
+  linkModal.style.display = 'none';
+}
+
+window.onclick = function(event) {
+  if (event.target == linkModal) {
+    linkModal.style.display = 'none';
+  }
+}
+
+function loadChallenge(index) {
+  foundFlags.clear();
+  const challenge = emailChallenges[index];
+  const totalFlags = Object.keys(challenge.explanations).length;
+
+  emailSenderEl.innerHTML = challenge.sender;
+  emailSubjectEl.innerHTML = challenge.subject;
+  emailBodyEl.innerHTML = challenge.body;
+
+  totalFlagsEl.textContent = totalFlags;
+  scoreEl.textContent = 0;
+  progressBar.style.width = (index / emailChallenges.length * 100) + "%";
+  feedbackContainer.innerHTML = `<p id="feedback-placeholder" style="color:var(--text-secondary); text-align:center;">Click on a red flag in the email to learn more.</p>`;
+  nextButton.style.display = 'none';
+
+  gameScreen.style.display = 'block';
+  summaryScreen.style.display = 'none';
+
+  document.querySelectorAll('.fake-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      showModal();
+    });
+  });
+}
+
+function updateScore() {
+  const challenge = emailChallenges[currentChallengeIndex];
+  const totalFlags = Object.keys(challenge.explanations).length;
+  const score = foundFlags.size;
+  scoreEl.textContent = score;
+
+  if (score === totalFlags && score > 0) {
+    nextButton.textContent = currentChallengeIndex < emailChallenges.length - 1 ? 'Next Challenge' : 'Finish Analysis';
+    nextButton.style.display = 'block';
+    progressBar.style.width = ((currentChallengeIndex + 1) / emailChallenges.length * 100) + "%";
+  } else {
+    nextButton.style.display = 'none';
+  }
+}
+
+function showSummary() {
+  gameScreen.style.display = 'none';
+  summaryScreen.style.display = 'block';
+
+  const expert = finalScore > (emailChallenges.reduce((acc, c) => acc + Object.keys(c.explanations).length, 0) / 2);
+  const headline = expert ? 'Phishing Expert!' : 'Keep Practicing!';
+  const message = expert
+    ? `You spotted ${finalScore} red flags. Great job protecting yourself online!`
+    : `You spotted ${finalScore} red flag${finalScore === 1 ? '' : 's'}. Try again to become a Phishing Expert!`;
+
+  summaryScreen.innerHTML = `
+    <h2>${headline}</h2>
+    ${expert
+      ? `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 1rem auto;display:block;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>`
+      : ''}
+    <p>${message}</p>
+    <button id="restart-button" class="restart-button">${expert ? 'Play Again' : 'Try Again'}</button>
+    <button id="main-button" class="main-button">Go to Main Page</button>
+  `;
+
+  document.getElementById('restart-button').addEventListener('click', () => {
+    currentChallengeIndex = 0;
+    finalScore = 0;
+    loadChallenge(currentChallengeIndex);
+  });
+  
+  document.getElementById('main-button').addEventListener('click', () => {
+    window.location.href = 'main.html';
+  });
+}
+
+function handleFlagClick(event) {
+  const flagElement = event.target.closest('.red-flag');
+  if (flagElement && !flagElement.classList.contains('found')) {
+    const flagName = flagElement.dataset.flag;
+    if (flagName && !foundFlags.has(flagName)) {
+      foundFlags.add(flagName);
+      
+      const placeholder = document.getElementById('feedback-placeholder');
+      if (placeholder) {
+        placeholder.style.display = 'none';
+      }
+
+      const explanation = emailChallenges[currentChallengeIndex].explanations[flagName];
+      const feedbackItem = document.createElement('div');
+      feedbackItem.className = 'feedback-item';
+      feedbackItem.innerHTML = explanation;
+      feedbackContainer.appendChild(feedbackItem);
+      
+      flagElement.classList.add('found');
+      updateScore();
+    }
+  }
+}
+
+const emailView = document.querySelector('.email-view-wrapper');
+if (emailView) {
+    emailView.addEventListener('click', handleFlagClick);
+}
+
+nextButton.addEventListener('click', () => {
+  finalScore += foundFlags.size;
+
+  if (currentChallengeIndex < emailChallenges.length - 1) {
+    currentChallengeIndex++;
+    loadChallenge(currentChallengeIndex);
+  } else {
+    showSummary();
+  }
+});
+
+window.onload = () => loadChallenge(0);
+</script>
+</body>
+</html>

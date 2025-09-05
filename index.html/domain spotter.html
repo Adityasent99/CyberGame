@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Domain Spotter Challenge - Dark Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  body {
+    background-color: #212121; /* Dark charcoal grey */
+    font-family: 'Inter', sans-serif;
+    color: #00c853; /* Dark green text */
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  .container {
+    background-color: #333333; /* Darker container */
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0, 200, 83, 0.2);
+    width: 400px;
+    padding: 20px 30px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #00c853;
+  }
+  .progress-bar {
+    height: 10px;
+    background: #424242;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .progress {
+    height: 100%;
+    background-color: #00c853;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  h1 {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.75rem;
+    margin: 0 0 15px 0;
+    color: #00e676; /* Brighter green for titles */
+  }
+  #question-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+    color: #BDBDBD;
+  }
+  #scenario-content {
+    font-size: 1rem;
+    margin-bottom: 25px;
+    min-height: 45px;
+    color: #E0E0E0;
+  }
+  .option-card {
+    border: 2px solid #555;
+    background: #424242;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+    user-select: none;
+    color: #E0E0E0;
+  }
+  .option-card:hover:not(.disabled) {
+    background: #555555;
+    border-color: #00c853;
+  }
+  .correct {
+    background-color: #1B5E20;
+    border-color: #4CAF50 !important;
+    cursor: default;
+    box-shadow: 0 0 15px #4CAF5099;
+    color: #E8F5E9;
+    font-weight: 700;
+  }
+  .incorrect {
+    background-color: #B71C1C;
+    border-color: #F44336 !important;
+    cursor: default;
+    box-shadow: 0 0 15px #f4433699;
+    color: #FFEBEE;
+    font-weight: 700;
+  }
+  .disabled {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+  #feedback-explanation {
+    white-space: pre-wrap;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    color: #BDBDBD;
+    margin-top: 0.5rem;
+    font-size: 1rem;
+  }
+  #feedback-explanation code {
+      background-color: #424242;
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: #00e676;
+  }
+  #next-button {
+    margin-top: 20px;
+    background-color: #424242;
+    border: 1px solid #00c853;
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #00e676;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+  }
+  #next-button:hover:not(:disabled) {
+    background-color: #00c853;
+    color: #212121;
+  }
+  #next-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Domain Spotter Challenge</h1>
+    <div class="progress-bar">
+      <div class="progress" id="progress"></div>
+    </div>
+    <div id="question-title"></div>
+    <div id="scenario-content"></div>
+    <div id="options-container"></div>
+    <div id="feedback-explanation"></div>
+    <button id="next-button" disabled>Next</button>
+  </div>
+  <script>
+    const questions = [
+      {
+        level: 1,
+        title: "You won a free Roblox skin",
+        scenario: "You receive an exciting offer claiming you won a free Roblox skin. Which domain is safe?",
+        options: [
+          { text: "roblox.com", isCorrect: true },
+          { text: "roblox-giveaway.win", isCorrect: false },
+          { text: "free-roblox-skins.net", isCorrect: false },
+          { text: "roblox-skins-offer.com", isCorrect: false }
+        ],
+        explanation: `Only <code>roblox.com</code> is the official domain. Offers from other domains are likely scams or phishing sites.`
+      },
+      {
+        level: 2,
+        title: "Update your YouTube password",
+        scenario: "You are prompted to update your YouTube password on a website. Which domain is legitimate?",
+        options: [
+          { text: "youtube.com", isCorrect: true },
+          { text: "youtube-security-check.com", isCorrect: false },
+          { text: "youtube-pass-reset.net", isCorrect: false },
+          { text: "youtubeaccountupdate.org", isCorrect: false }
+        ],
+        explanation: `Only <code>youtube.com</code> is official. Be cautious of pasting passwords or credentials on other domains.`
+      },
+      {
+        level: 3,
+        title: "Amazon order failed – click to retry",
+        scenario: "Your Amazon order supposedly failed and this site asks you to retry. Which domain should you trust?",
+        options: [
+          { text: "amazon.com", isCorrect: true },
+          { text: "amaz0n.in", isCorrect: false },
+          { text: "amazon-orders.xyz", isCorrect: false },
+          { text: "myamazoncart.com", isCorrect: false }
+        ],
+        explanation: `Only <code>amazon.com</code> is legitimate. Watch for typos and unusual domain endings.`
+      },
+      {
+        level: 4,
+        title: "Google alert: Your account is being hacked",
+        scenario: "You get an alert saying your Google account is hacked. Which domain is safe?",
+        options: [
+          { text: "google.com", isCorrect: true },
+          { text: "google-alerts.in", isCorrect: false },
+          { text: "goggle-security.net", isCorrect: false },
+          { text: "google-security-checker.com", isCorrect: false }
+        ],
+        explanation: `Google's official domain is <code>google.com</code>. Phishing sites try to mimic with altered or added words.`
+      },
+      {
+        level: 5,
+        title: "Special sale on Instagram limited to 24 hrs",
+        scenario: "You see a limited-time sale on Instagram. Which domain is genuine?",
+        options: [
+          { text: "instagram.com", isCorrect: true },
+          { text: "insta-shop-offer.com", isCorrect: false },
+          { text: "instagramdeals.net", isCorrect: false },
+          { text: "theinstagramoffers.org", isCorrect: false }
+        ],
+        explanation: `Instagram’s official domain is <code>instagram.com</code>. Avoid suspicious offers on unknown domains.`
+      },
+      {
+        level: 6,
+        title: "SBI KYC update needed immediately",
+        scenario: "You are asked to update SBI KYC details. Which domain is authentic?",
+        options: [
+          { text: "onlinesbi.sbi", isCorrect: true },
+          { text: "sbi-verification.com", isCorrect: false },
+          { text: "sbionline-kyc.net", isCorrect: false },
+          { text: "sbikyc-update.org", isCorrect: false }
+        ],
+        explanation: `SBI uses <code>onlinesbi.sbi</code> as its genuine portal. Beware of fake domains trying to imitate.`
+      },
+      {
+        level: 7,
+        title: "Your Apple ID is locked",
+        scenario: "An alert says your Apple ID is locked. Which domain should you trust?",
+        options: [
+          { text: "apple.com", isCorrect: true },
+          { text: "appleid-lockedhelp.in", isCorrect: false },
+          { text: "idapple-support.net", isCorrect: false },
+          { text: "appleaccountsecurity.org", isCorrect: false }
+        ],
+        explanation: `Apple official domain is <code>apple.com</code>. Always check URLs carefully.`
+      },
+      {
+        level: 8,
+        title: "Netflix has a free month trial",
+        scenario: "You receive a promo about a free month trial on Netflix. Which domain is real?",
+        options: [
+          { text: "netflix.com", isCorrect: true },
+          { text: "netflix-freetrial.net", isCorrect: false },
+          { text: "netflixpromo.xyz", isCorrect: false },
+          { text: "netflixoffer.online", isCorrect: false }
+        ],
+        explanation: `Only <code>netflix.com</code> is official. Others are suspicious phishing attempts.`
+      },
+      {
+        level: 9,
+        title: "Claim ₹1000 Paytm cashback now!",
+        scenario: "You get an offer claiming ₹1000 cashback from Paytm. Which domain is safe?",
+        options: [
+          { text: "paytm.com", isCorrect: true },
+          { text: "paytm-bonus.in", isCorrect: false },
+          { text: "paytmcashback.net", isCorrect: false },
+          { text: "paytmoffer.org", isCorrect: false }
+        ],
+        explanation: `Paytm’s legitimate domain is <code>paytm.com</code>. Avoid unknown bonus or cashback sites.`
+      },
+      {
+        level: 10,
+        title: "Your Zomato delivery is delayed – click to track",
+        scenario: "You are told your Zomato delivery is delayed and can track it. Which domain would be genuine?",
+        options: [
+          { text: "zomato.com", isCorrect: true },
+          { text: "zomato-delivery-update.in", isCorrect: false },
+          { text: "zomatotracking.net", isCorrect: false },
+          { text: "zomatodeliverytrack.org", isCorrect: false }
+        ],
+        explanation: `Only <code>zomato.com</code> is legitimate. Beware of similar-looking fake domains.`
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let questionAnswered = false;
+
+    const questionTitleEl = document.getElementById("question-title");
+    const scenarioContentEl = document.getElementById("scenario-content");
+    const optionsContainer = document.getElementById("options-container");
+    const feedbackExplanation = document.getElementById("feedback-explanation");
+    const nextButton = document.getElementById("next-button");
+
+    /**
+     * Shuffles array in place.
+     * @param {Array} array items An array containing the items.
+     */
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function loadQuestion() {
+      questionAnswered = false;
+      const currentQuestion = questions[currentQuestionIndex];
+      const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+      document.getElementById("progress").style.width = progress + "%";
+      questionTitleEl.textContent = `Question ${currentQuestion.level}: ${currentQuestion.title}`;
+      scenarioContentEl.innerHTML = `<p>${currentQuestion.scenario}</p>`;
+      optionsContainer.innerHTML = "";
+      feedbackExplanation.innerHTML = "";
+      nextButton.disabled = true;
+
+      // Create a shuffled copy of the options
+      const shuffledOptions = [...currentQuestion.options];
+      shuffleArray(shuffledOptions);
+
+      shuffledOptions.forEach(option => {
+        const optionEl = document.createElement("div");
+        optionEl.className = "option-card";
+        optionEl.textContent = option.text;
+        optionEl.onclick = () => handleOptionClick(option, optionEl);
+        optionsContainer.appendChild(optionEl);
+      });
+    }
+
+    function handleOptionClick(option, element) {
+      if (questionAnswered) return;
+      questionAnswered = true;
+      nextButton.disabled = false;
+      
+      const allOptionElements = document.querySelectorAll(".option-card");
+      allOptionElements.forEach(el => {
+        el.style.pointerEvents = "none";
+        el.style.cursor = "default";
+        el.classList.add("disabled");
+      });
+
+      if (option.isCorrect) {
+        score++;
+        element.classList.remove("disabled");
+        element.classList.add("correct");
+      } else {
+        element.classList.remove("disabled");
+        element.classList.add("incorrect");
+        const correctOptionText = questions[currentQuestionIndex].options.find(o => o.isCorrect).text;
+        allOptionElements.forEach(el => {
+          if (el.textContent === correctOptionText) {
+            el.classList.remove("disabled");
+            el.classList.add("correct");
+          }
+        });
+      }
+      feedbackExplanation.innerHTML = `<strong>Explanation:</strong> ${questions[currentQuestionIndex].explanation}`;
+    }
+
+    nextButton.onclick = () => {
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+      } else {
+        showFinalScore();
+      }
+    };
+
+    function showFinalScore() {
+      let badgeName = '';
+      let badgeIcon = '';
+      if (score >= 0 && score <= 4) {
+        badgeName = 'Domain Pup';
+        badgeIcon = '🐾';
+      } else if (score >= 5 && score <= 9) {
+        badgeName = 'Digital Watch Dog';
+        badgeIcon = '🐕';
+      } else if (score === 10) {
+        badgeName = 'Domain Defender';
+        badgeIcon = '🛡️';
+      }
+      const container = document.querySelector(".container");
+      container.innerHTML = `
+        <div style="text-align:center; padding: 3rem;">
+          <h2 style="font-size: 2rem; font-weight: bold; color:#00e676;">Challenge Complete!</h2>
+          <p style="font-size: 4rem; margin: 1rem 0;">${badgeIcon}</p>
+          <p style="font-size: 1.25rem; color: #BDBDBD;">You've earned the</p>
+          <p style="font-size: 1.75rem; font-weight: bold; margin: .5rem 0; color: #E0E0E0;">${badgeName}</p>
+          <p style="color: #BDBDBD; font-size: 1.25rem;">Final Score: <strong>${score} / ${questions.length}</strong></p>
+          <button onclick="location.reload()" style="margin-top: 2rem; padding: 12px 32px; font-weight:700; font-size: 1rem; background: #424242; border:1px solid #00c853; border-radius: 10px; cursor: pointer; color: #00e676;">Play Again</button>
+        </div>
+      `;
+    }
+
+    document.addEventListener("DOMContentLoaded", loadQuestion);
+  </script>
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Social Engineering Sleuth</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-main: #212121;
+      --bg-secondary: #333333;
+      --bg-chat: #2a2a2a;
+      --text-primary: #E0E0E0;
+      --text-secondary: #BDBDBD;
+      --accent: #00e676;
+      --accent-dark: #00c853;
+      --shadow-color: rgba(0, 230, 118, 0.15);
+      --correct-bg: #1B5E20;
+      --correct-border: #4CAF50;
+      --correct-text: #E8F5E9;
+      --incorrect-bg: #B71C1C;
+      --incorrect-border: #F44336;
+      --incorrect-text: #FFEBEE;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    #app {
+      background: var(--bg-secondary);
+      border-radius: 1rem;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 4px 25px var(--shadow-color);
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+      overflow: hidden;
+      border: 1px solid #444;
+    }
+    header {
+      padding: 1.25rem;
+      border-bottom: 1px solid #444;
+      text-align: center;
+      user-select: none;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+    main#chat {
+      flex: 1;
+      padding: 1rem 1.5rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      scroll-behavior: smooth;
+      background: var(--bg-chat);
+    }
+    .badge-summary {
+      text-align: center;
+      padding: 2rem 1rem;
+      min-height: 200px;
+      border-radius: 1rem;
+    }
+    .badge-summary .badge-icon {
+      font-size: 4rem;
+      margin-bottom: 1.2rem;
+    }
+    .badge-summary h2 {
+      font-size: 2rem;
+      color: var(--text-primary);
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .badge-summary p {
+      color: var(--text-secondary);
+      font-size: 1.15rem;
+      margin: 0.5rem 0;
+    }
+    footer {
+      padding: 0.7rem 1.5rem;
+      border-top: 1px solid #444;
+      text-align: center;
+    }
+    button, .option-btn {
+      font-family: inherit;
+    }
+    button#restartBtn, button#homeBtn {
+      background-color: transparent;
+      color: var(--accent);
+      font-weight: 700;
+      border: 2px solid var(--accent-dark);
+      border-radius: 0.5rem;
+      padding: 0.6rem 1.4rem;
+      cursor: pointer;
+      transition: background 0.25s, color 0.25s;
+      font-size: 1.1rem;
+    }
+     button#restartBtn {
+        margin-right: 10px;
+     }
+    button#restartBtn:hover, button#restartBtn:focus,
+    button#homeBtn:hover, button#homeBtn:focus {
+      background-color: var(--accent-dark);
+      color: var(--bg-main);
+      outline: none;
+    }
+     button#homeBtn {
+        display: none;
+     }
+    .bubble {
+      border-radius: 1rem;
+      padding: 0.75rem 1rem;
+      max-width: 75%;
+      margin-bottom: 0.75rem;
+      display: inline-block;
+      word-break: break-word;
+      line-height: 1.5;
+      font-size: 1rem;
+    }
+    .sender {
+      background: #424242;
+      color: var(--text-primary);
+      align-self: flex-start;
+    }
+    .user {
+      background: var(--accent-dark);
+      color: var(--bg-main);
+      font-weight: 600;
+      align-self: flex-end;
+    }
+    .option-btn {
+      transition: transform 0.15s, box-shadow 0.15s, background-color 0.2s, color 0.2s;
+      cursor: pointer;
+      padding: 0.55rem 1.1rem;
+      border-radius: 0.75rem;
+      background-color: #424242;
+      color: var(--text-primary);
+      font-weight: 600;
+      border: 1px solid #555;
+      font-size: 1rem;
+      box-shadow: 0 4px 8px rgba(0,0,0,.2);
+      user-select: none;
+      margin-bottom: 0.28rem;
+    }
+    .option-btn:hover, .option-btn:focus {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px var(--shadow-color);
+      outline: none;
+      background-color: var(--accent-dark);
+      color: var(--bg-main);
+      border-color: var(--accent-dark);
+    }
+    .feedback-box {
+      border-radius: 0.75rem;
+      padding: 1.05rem;
+      margin-top: 1.1rem;
+      max-width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 1.02rem;
+      background: #2a2a2a;
+      border-left: 0.375rem solid var(--accent);
+      color: var(--text-secondary);
+    }
+    .failure-box {
+      background: var(--incorrect-bg);
+      border-left: 0.375rem solid var(--incorrect-border);
+      color: var(--incorrect-text);
+    }
+    .success-box {
+      background: var(--correct-bg);
+      border-left: 0.375rem solid var(--correct-border);
+      color: var(--correct-text);
+    }
+  </style>
+</head>
+<body>
+  <div id="app" role="main" aria-label="Social Engineering Sleuth Simulation">
+    <header>Social Engineering Sleuth</header>
+    <main id="chat" aria-live="polite" aria-atomic="false"></main>
+    <footer>
+      <button id="restartBtn" hidden aria-label="Restart Game">Restart Game</button>
+      <button id="homeBtn" aria-label="Go to Home Screen">Home</button>
+    </footer>
+  </div>
+<script>
+const BADGES = [
+  {name: "Novice", icon:"🔰", min:0, max:2, color:"#4a2c0f"},
+  {name: "Cautious", icon:"🦺", min:3, max:4, color:"#4d4013"},
+  {name: "Vigilant", icon:"🛡️", min:5, max:10, color:"#1B5E20"},
+];
+let badgeEarned = BADGES[0];
+
+const scenarios = [
+  {
+    id: 1,
+    title: "SAP Hackathon Scam",
+    intro: "You receive an email from someone claiming to work at SAP, congratulating you for 'winning' a hackathon and offering free access to SAP HANA and Cloud tools.",
+    chat: [
+      {
+        sender: "scammer",
+        text: "Congratulations! You've won our SAP Hackathon and get exclusive access to all SAP Cloud and HANA tools free of charge.",
+        options: [
+          { text: "Sounds exciting—how do I get access?", next: 1, safe: false },
+          { text: "I'm surprised, I never entered this—please clarify.", next: 2, safe: true },
+        ]
+      },
+      {
+        sender: "scammer",
+        text: "To activate your reward, please sign in with your SAP account credentials via our secure portal.",
+        options: [
+          { text: "Ask why login is needed.", next: 3, safe: true },
+          { text: "Provide my credentials.", next: -1, safe: false, feedback: "Never provide credentials through suspicious or unexpected links!" }
+        ]
+      },
+      {
+        sender: "scammer",
+        text: "It's a random prize for SAP users! We just need authentication to upgrade your account.",
+        options: [
+          { text: "Report this as phishing.", next: -2, safe: true, feedback: "Reporting phishing emails helps protect yourself and others." },
+          { text: "Go along and ask for payment.", next: 1, safe: false }
+        ]
+      },
+      {
+        sender: "scammer",
+        text: "Final step: Please send the verification code just sent to your phone.",
+        options: [
+          { text: "Refuse and double-check official SAP contacts.", next: -2, safe: true, feedback: "Professional! Never share verification codes." },
+          { text: "Send the code.", next: -1, safe: false, feedback: "This gives scammers total control over your account." }
+        ]
+      }
+    ]
+  },
+  {
+    id: 2,
+    title: "Digital Arrest Scam",
+    intro: "You receive a WhatsApp message from 'Officer Jain' who claims you are under arrest due to narcotics found linked to your name.",
+    chat: [
+      {
+        sender: "scammer",
+        text: "🕵️‍♂️ Officer Jain: A digital warrant has been issued—your ID is linked to a narcotics case.",
+        options: [
+          { text: "Insist on official notice and police badge number.", next: 1, safe: true },
+          { text: "Panic ('What should I do?')", next: 2, safe: false }
+        ]
+      },
+      {
+        sender: "scammer",
+        text: "Send ₹50,000 fast or your accounts will be frozen and you will lose your job.",
+        options: [
+          { text: "Refuse payment & consult lawyer.", next: 3, safe: true, feedback: "You did the right thing: always consult an official lawyer or police." },
+          { text: "Ask for a 'quick fix' option.", next: 4, safe: false }
+        ]
+      },
+      {
+        sender: "scammer",
+        text: "We are sending police to your home now!",
+        options: [
+          { text: "End call, contact your local police station.", next: -2, safe: true, feedback: "Right! Always verify with local authorities before taking action." },
+          { text: "Beg for time.", next: 5, safe: false }
+        ]
+      },
+      {
+        sender: "scammer",
+        text: "I am giving only you a special chance to settle for ₹20,000 if you pay NOW.",
+        options: [
+          { text: "Refuse! Demand paperwork.", next: 6, safe: true },
+          { text: "Agree to pay ₹20,000.", next: -1, safe: false, feedback: "Never pay scammers; consult the police." }
+        ]
+      },
+      {
+        sender: "scammer",
+        text: "We can close your case if you send your Aadhar and PAN pictures for 'verification'.",
+        options: [
+          { text: "Never! Sensitive documents must not be shared.", next: -2, safe: true, feedback: "Right decision! No official will request Aadhaar over chat." },
+          { text: "Send images.", next: -1, safe: false, feedback: "Never share ID through chat—risk of identity theft!" }
+        ]
+      },
+      {
+        sender: "scammer",
+        text: "Fine, but now you must speak with my 'senior inspector' on another number.",
+        options: [
+          { text: "Politely decline and block the number.", next: -2, safe: true, feedback: "Trust your gut—block and move on." },
+          { text: "Continue conversation.", next: 1, safe: false }
+        ]
+      },
+      {
+        sender: "scammer",
+        text: "We will keep calling until you cooperate.",
+        options: [
+          { text: "Block and report the number.", next: -2, safe: true, feedback: "Good! Reporting helps others too." },
+          { text: "Do whatever they say!", next: -1, safe: false, feedback: "Victims end up losing money or data. Don't be one." }
+        ]
+      }
+    ]
+  }
+];
+
+let state = {
+  scenarioIndex: 0,
+  chatIndex: 0,
+  path: [],
+  safeActions: 0
+};
+
+const chatEl = document.getElementById('chat');
+const restartBtn = document.getElementById('restartBtn');
+const homeBtn = document.getElementById('homeBtn');
+
+homeBtn.addEventListener('click', () => {
+  window.location.href = "main.html"; 
+});
+
+function appendMsg(sender, text, isIntro = false) {
+  const div = document.createElement('div');
+  div.className = 'bubble ' + (sender === 'user' ? 'user' : 'sender');
+  if(isIntro){
+    div.style.fontWeight = '600';
+    div.style.marginBottom = '1rem';
+    div.style.maxWidth = '100%';
+    div.style.textAlign = 'center';
+    div.style.fontSize = '1rem';
+    div.style.color = "var(--text-secondary)";
+  }
+  div.textContent = text;
+  chatEl.appendChild(div);
+}
+
+function renderChat() {
+  chatEl.innerHTML = '';
+  const sc = scenarios[state.scenarioIndex];
+  appendMsg('system', `Scenario ${sc.id}: ${sc.title}`, true);
+  appendMsg('system', sc.intro, true);
+  state.path.forEach(step => {
+    if(step.sender) appendMsg(step.sender, step.text, false);
+    if(step.user) appendMsg('user', step.user, false);
+  });
+  const step = sc.chat[state.chatIndex];
+  appendMsg('scammer', step.text, false);
+
+  let optionsCont = document.createElement('div');
+  optionsCont.id = 'options';
+  optionsCont.style.marginTop = '1rem';
+  optionsCont.style.display = 'flex';
+  optionsCont.style.flexDirection = 'column';
+  optionsCont.style.gap = '0.75rem';
+  chatEl.appendChild(optionsCont);
+
+  step.options.forEach(opt => {
+    let btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt.text;
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Select option: ' + opt.text);
+    btn.tabIndex = 0;
+    btn.onclick = () => chooseOption(opt);
+    btn.onkeypress = e => {
+      if(e.key==='Enter' || e.key===' '){
+        e.preventDefault();
+        chooseOption(opt);
+      }
+    };
+    optionsCont.appendChild(btn);
+  });
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+const safeStepsUsed = new Set();
+
+function chooseOption(opt) {
+  if(opt.safe && !safeStepsUsed.has(state.scenarioIndex + '-' + state.chatIndex)){
+    state.safeActions++;
+    safeStepsUsed.add(state.scenarioIndex + '-' + state.chatIndex);
+  }
+
+  state.path.push({user: opt.text});
+  const sc = scenarios[state.scenarioIndex];
+  if(state.chatIndex>=0 && state.chatIndex<sc.chat.length){
+    state.path.push({sender: 'scammer', text: sc.chat[state.chatIndex].text});
+  }
+  if(opt.next < 0){
+    finishScenario(opt.next === -2, opt.feedback);
+  }else{
+    state.chatIndex = opt.next;
+    renderChat();
+  }
+}
+
+function finishScenario(success, message) {
+  chatEl.innerHTML = '';
+  state.path.forEach(step => {
+    if(step.sender) appendMsg(step.sender, step.text, false);
+    if(step.user) appendMsg('user', step.user, false);
+  });
+
+  const feedbackDiv = document.createElement('div');
+  feedbackDiv.className = success ? 'success-box' : 'failure-box';
+  feedbackDiv.textContent = message || (success ? "Well done!" : "Be careful—scammers use these tricks.");
+  chatEl.appendChild(feedbackDiv);
+
+  const tipsDiv = document.createElement('div');
+  tipsDiv.className = 'feedback-box';
+  tipsDiv.innerHTML = `
+    <strong>Key Tips for Cybersecurity:</strong>
+    <ul style="padding-left: 1.2rem; margin-top: 0.5rem;">
+      <li>Never share private details or codes over chat or email.</li>
+      <li>Verify any prize or threat via official contacts (not new numbers/links).</li>
+      <li>Report scams and educate others.</li>
+      <li>When in doubt, ask a trusted person before acting.</li>
+    </ul>`;
+  chatEl.appendChild(tipsDiv);
+
+  let controlDiv = document.createElement('div');
+  controlDiv.style.textAlign = 'center';
+  controlDiv.style.marginTop = '1.5rem';
+
+  const lastScenario = (state.scenarioIndex === scenarios.length - 1);
+
+  if(success && !lastScenario){
+    let nextBtn = document.createElement('button');
+    nextBtn.className = 'option-btn';
+    nextBtn.textContent = "Next Scenario";
+    nextBtn.tabIndex = 0;
+    nextBtn.onclick = () => {
+      state.scenarioIndex++;
+      state.chatIndex = 0;
+      state.path = [];
+      renderChat();
+    }
+    controlDiv.appendChild(nextBtn);
+  } else if (lastScenario || !success) {
+     if(lastScenario){
+         setTimeout(showBadgeSummary, 900);
+     } else {
+        restartBtn.hidden = false;
+        homeBtn.style.display = 'inline-block';
+        restartBtn.focus();
+        restartBtn.onclick = restartGame;
+     }
+  } 
+  chatEl.appendChild(controlDiv);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function showBadgeSummary() {
+  let badge = BADGES.find(b => (state.safeActions >= b.min && state.safeActions <= b.max)) || BADGES[BADGES.length-1];
+  const main = document.getElementById('chat');
+  const footer = document.querySelector('footer');
+  footer.innerHTML = ''; // Clear footer buttons
+
+  main.innerHTML = `
+    <div class="badge-summary" style="background:${badge.color};">
+      <div class="badge-icon">${badge.icon}</div>
+      <h2>You earned the badge: <span style="color: var(--accent)">${badge.name}</span></h2>
+      <p>Safe decisions: <strong>${state.safeActions}</strong></p>
+      <p style="font-size:1.4rem; margin:.9rem 0 .5rem 0;">
+        ${badge.name === 'Vigilant'
+            ? "Superb! You spotted almost all scams!"
+            : badge.name === 'Cautious'
+                ? "Good job! You're mostly careful!"
+                : "Keep learning to stay scam-safe!"
+        }
+      </p>
+      <div style="display:flex; justify-content:center; gap:10px; margin-top:1.5rem;">
+        <button class="option-btn" onclick="restartGame()">Play Again</button>
+        <button class="option-btn" onclick="window.location.href='main.html'">Home</button>
+      </div>
+    </div>
+  `;
+}
+
+function restartGame() {
+  state = {scenarioIndex:0, chatIndex:0, path:[], safeActions:0};
+  safeStepsUsed.clear();
+  const footer = document.querySelector('footer');
+  footer.innerHTML = `
+      <button id="restartBtn" hidden aria-label="Restart Game">Restart Game</button>
+      <button id="homeBtn" aria-label="Go to Home Screen">Home</button>
+  `;
+  // Re-assign button variables after recreating footer
+  const newRestartBtn = document.getElementById('restartBtn');
+  const newHomeBtn = document.getElementById('homeBtn');
+  newHomeBtn.style.display = 'none'; // Initially hide home button
+  newHomeBtn.addEventListener('click', () => { window.location.href = "main.html"; });
+
+  renderChat();
+}
+
+window.onload = renderChat;
+</script>
+</body>
+</html>
