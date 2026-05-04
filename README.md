@@ -1,4 +1,4 @@
-Interactivee Digital Fraud Simulation Game 
+Interactive Digital Fraud Simulation Game 
 
 
 Tech Stack: 
